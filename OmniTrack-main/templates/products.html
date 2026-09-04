@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Ledger - Inventory Control</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/"><i class="bi bi-speedometer2 me-2"></i>Sales Dashboard</a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="/">Overview</a></li>
+                    <li class="nav-item"><a class="nav-link active fw-semibold" href="/products">Inventory</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/customers">Customers</a></li>
+                    <li class="nav-item"><a class="btn btn-primary btn-sm ms-3 px-3 text-white fw-bold" href="/orders/create">+ New Order</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card border-0 shadow-sm p-4 bg-white">
+                    <h4 class="fw-bold text-dark mb-3"><i class="bi bi-plus-circle me-2 text-primary"></i>Add New Product</h4>
+                    <form action="/products" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Product Name</label>
+                            <input type="text" name="name" class="form-control" placeholder="e.g., Logitech MX Master 3S" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Description</label>
+                            <textarea name="description" class="form-control" rows="3" placeholder="Enter specifications or details..."></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col mb-3">
+                                <label class="form-label fw-semibold">Unit Price (₹)</label>
+                                <input type="number" step="0.01" name="price" class="form-control" placeholder="0.00" min="0" required>
+                            </div>
+                            <div class="col mb-3">
+                                <label class="form-label fw-semibold">Initial Stock</label>
+                                <input type="number" name="stock_quantity" class="form-control" placeholder="0" min="0" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 fw-bold py-2 mt-2">
+                            <i class="bi bi-save me-2"></i>Save to Warehouse
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-md-8 mb-4">
+                <div class="card border-0 shadow-sm bg-white">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h5 class="fw-bold text-dark mb-0"><i class="bi bi-box-seam me-2"></i>Active Stock Ledger</h5>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 text-nowrap">
+                            <thead class="table-light text-muted uppercase small">
+                                <tr>
+                                    <th class="ps-3">ID</th>
+                                    <th>Item Details</th>
+                                    <th>Unit Price</th>
+                                    <th>Stock Level</th>
+                                    <th class="pe-3">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if products %}
+                                    {% for product in products %}
+                                        <tr>
+                                            <td class="ps-3 text-secondary fw-bold">#{{ product.product_id }}</td>
+                                            <td>
+                                                <span class="fw-semibold text-dark d-block">{{ product.name }}</span>
+                                                <small class="text-muted text-wrap d-block" style="max-width: 300px;">{{ product.description or 'No description provided.' }}</small>
+                                            </td>
+                                            <td class="fw-semibold">₹{{ "{:,.2f}".format(product.price) }}</td>
+                                            <td class="fw-bold">
+                                                <span class="{% if product.stock_quantity < 10 %}text-danger{% else %}text-dark{% endif %}">
+                                                    {{ product.stock_quantity }} units
+                                                </span>
+                                            </td>
+                                            <td class="pe-3">
+                                                {% if product.stock_quantity == 0 %}
+                                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Out of Stock</span>
+                                                {% elif product.stock_quantity < 10 %}
+                                                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Low Stock</span>
+                                                {% else %}
+                                                    <span class="badge bg-success-subtle text-success border border-success-subtle">In Stock</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center py-5 text-muted">
+                                            No tracking products currently cataloged in database inventory.
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
